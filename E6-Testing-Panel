@@ -5,15 +5,105 @@ local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
+local backpack = player:WaitForChild("Backpack")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 
+--Varibles
+local ragdolled = false
+local teleportToggleOn = false
+local currentTool = nil
 
 --Connections
 local noclipConnection = nil
 local fakeSeat = nil
 local monitorConnection = nil
 
+--Setup
+local function ragdollify(character)
+	for _, motor in pairs(character:GetDescendants()) do
+		if motor:IsA("Motor6D") then
+			local part0 = motor.Part0
+			local part1 = motor.Part1
 
+			-- Create attachments
+			local a1 = Instance.new("Attachment", part0)
+			local a2 = Instance.new("Attachment", part1)
+
+			a1.Name = "RagdollAttachment0"
+			a2.Name = "RagdollAttachment1"
+
+			-- Create a ball socket joint
+			local socket = Instance.new("BallSocketConstraint")
+			socket.Attachment0 = a1
+			socket.Attachment1 = a2
+			socket.Parent = part0
+
+			-- Remove Motor6D to allow physics to take over
+			motor.Enabled = false
+		end
+	end
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+	end
+end
+
+local function unragdollify(character)
+	for _, desc in ipairs(character:GetDescendants()) do
+		if desc:IsA("BallSocketConstraint") or desc:IsA("Attachment") then
+			desc:Destroy()
+		end
+	end
+
+	for _, motor in pairs(character:GetDescendants()) do
+		if motor:IsA("Motor6D") then
+			motor.Enabled = true
+		end
+	end
+
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+	end
+end
+
+local function createTeleportTool()
+	local tool = Instance.new("Tool")
+	tool.Name = "Click Teleport"
+	tool.RequiresHandle = false
+	tool.CanBeDropped = false
+
+	local mouseClickConnection
+
+	tool.Activated:Connect(function()
+		local mouse = player:GetMouse()
+		local character = player.Character
+		local hrp = character and character:FindFirstChild("HumanoidRootPart")
+
+		if mouse and hrp then
+			local targetPos = mouse.Hit.Position
+			hrp.CFrame = CFrame.new(targetPos + Vector3.new(0, 3, 0)) -- slight offset so you don't fall through
+		end
+	end)
+
+	return tool
+end
+
+
+local function onCharacterAdded(character)
+	if teleportToggleOn then
+		wait(1) -- give time for Backpack to exist again
+		if not backpack:FindFirstChild("Click Teleport") then
+			currentTool = createTeleportTool()
+			currentTool.Parent = backpack
+		end
+	end
+end
+
+-- Connect Functions
+player.CharacterAdded:Connect(onCharacterAdded)
 
 
 Rayfield:Notify({
@@ -27,7 +117,7 @@ local Window = Rayfield:CreateWindow({
 	Name = "E6 Testing Panel",
 	Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
 	LoadingTitle = "404_E6",
-	LoadingSubtitle = "Version: 1.0.1",
+	LoadingSubtitle = "Version: 1.0.3",
 	Theme = "AmberGlow", -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
 	DisableRayfieldPrompts = true,
@@ -73,7 +163,7 @@ local Toggle = Tab:CreateToggle({
 	CurrentValue = false,
 	Flag = "TestPanelToggle", 
 	Callback = function(Value)
-		loadstring(game:HttpGet('https://raw.githubusercontent.com/404-E66/E6/refs/heads/main/E6-Testing-Panel'))()
+		loadstring(game:HttpGet('https://raw.githubusercontent.com/404-E6/404_E6Panel/refs/heads/main/WIP-Panel'))()
 
 	end,
 })
@@ -157,26 +247,51 @@ local Toggle = Tab:CreateToggle({
 	end,
 })
 
+
 local Toggle = Tab:CreateToggle({
 	Name = "Fall",
 	CurrentValue = false,
 	Flag = "FallToggle",
 	Callback = function(Value)
-		character = player.Character or player.CharacterAdded:Wait()
-		humanoid = character:WaitForChild("Humanoid")
-		local hrp = character:WaitForChild("HumanoidRootPart")
+		local character = player.Character or player.CharacterAdded:Wait()
+		local humanoid = character:WaitForChild("Humanoid")
 
 		if Value then
-			-- Simulate fall: ragdoll + freeze
-			humanoid.PlatformStand = true
-			hrp.Anchored = true -- "Stuck" to the ground
+			-- Lay down like Infinite Yield's ":lay"
+			humanoid:ChangeState(Enum.HumanoidStateType.FallingDown)
 		else
-			-- Stand back up
-			humanoid.PlatformStand = false
-			hrp.Anchored = false
+			-- Stand back up manually
+			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 		end
 	end,
 })
+
+local Toggle = Tab:CreateToggle({
+	Name = "Teleport Tool",
+	CurrentValue = false,
+	Flag = "TeleportToolToggle",
+	Callback = function(Value)
+		teleportToggleOn = Value
+
+		if Value then
+			if not backpack:FindFirstChild("Click Teleport") then
+				currentTool = createTeleportTool()
+				currentTool.Parent = backpack
+			end
+		else
+			local tool = backpack:FindFirstChild("Click Teleport")
+			if tool then
+				tool:Destroy()
+			end
+			-- also clean up if holding it
+			if player.Character and player.Character:FindFirstChild("Click Teleport") then
+				player.Character["Click Teleport"]:Destroy()
+			end
+			currentTool = nil
+		end
+	end,
+})
+
 
 local Tab = Window:CreateTab("Panels", 4483362458)
 local Section = Tab:CreateSection("Basic")
@@ -295,4 +410,3 @@ local Toggle = Tab:CreateToggle({
 
 	end,
 })
-
