@@ -12,12 +12,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --Varibles
 local ragdolled = false
 local teleportToggleOn = false
-local currentTool = nil
+local spinning = false
+local spinSpeed = 25
 
 --Connections
 local noclipConnection = nil
 local fakeSeat = nil
 local monitorConnection = nil
+local currentTool = nil
+local spinConnection = nil
+
+
 
 --Setup
 local function ragdollify(character)
@@ -101,6 +106,27 @@ local function onCharacterAdded(character)
 		end
 	end
 end
+
+local function startSpin()
+	local character = player.Character or player.CharacterAdded:Wait()
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+
+	spinConnection = RunService.RenderStepped:Connect(function(dt)
+		if spinning and rootPart then
+			local rotation = CFrame.Angles(0, math.rad(spinSpeed), 0)
+			rootPart.CFrame = rootPart.CFrame * rotation
+		end
+	end)
+end
+
+-- Function to stop spinning
+local function stopSpin()
+	if spinConnection then
+		spinConnection:Disconnect()
+		spinConnection = nil
+	end
+end
+
 
 -- Connect Functions
 player.CharacterAdded:Connect(onCharacterAdded)
@@ -291,6 +317,34 @@ local Toggle = Tab:CreateToggle({
 		end
 	end,
 })
+
+local Toggle = Tab:CreateToggle({
+	Name = "Spin",
+	CurrentValue = false,
+	Flag = "SpinToggle", 
+	Callback = function(Value)
+		spinning = Value
+
+		if spinning then
+			startSpin()
+		else
+			stopSpin()
+		end
+	end,
+})
+
+local Slider = Tab:CreateSlider({
+	Name = "Spin Speed",
+	Range = {1, 100},
+	Increment = 1,
+	Suffix = "SPIN",
+	CurrentValue = 25,
+	Flag = "Slider1",
+	Callback = function(Value)
+		spinSpeed = Value
+	end,
+})
+
 
 
 local Tab = Window:CreateTab("Panels", 4483362458)
