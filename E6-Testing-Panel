@@ -1,1 +1,298 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+
+
+--Connections
+local noclipConnection = nil
+local fakeSeat = nil
+local monitorConnection = nil
+
+
+
+
+Rayfield:Notify({
+	Title = "Notification",
+	Content = "Panel Loaded",
+	Duration = 6.5,
+	Image = 4483362458,
+})
+
+local Window = Rayfield:CreateWindow({
+	Name = "E6 Testing Panel",
+	Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+	LoadingTitle = "404_E6",
+	LoadingSubtitle = "Version: 1.0.1",
+	Theme = "AmberGlow", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+	DisableRayfieldPrompts = true,
+	DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+	ConfigurationSaving = {
+		Enabled = true,
+		FolderName = nil, -- Create a custom folder for your hub/game
+		FileName = "E6"
+	},
+
+	Discord = {
+		Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+		Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+		RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+	},
+
+	KeySystem = true, -- Set this to true to use our key system
+	KeySettings = {
+		Title = "E6 Testing Panel",
+		Subtitle = "E6 Testing Panel Key System",
+		Note = "Only E6 knows the key", -- Use this to tell the user how to get a key
+		FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+		SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+		GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+		Key = {"TempKey404E6-67456QUDSBWL", "E6PK4044567-AWIFDSNAM6238"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+	}
+})
+
+local Tab = Window:CreateTab("Main", 4483362458) -- Title, Image
+local Section = Tab:CreateSection("Testing (Used for Testing purposes ONLY use at your own risk)")
+
+local Button = Tab:CreateButton({
+	Name = "Delete Panel",
+	Callback = function()
+		-- The function that takes place when the button is pressed
+		Rayfield:Destroy()
+	end,
+})
+
+local Toggle = Tab:CreateToggle({
+	Name = "Testing Panel",
+	CurrentValue = false,
+	Flag = "TestPanelToggle", 
+	Callback = function(Value)
+		loadstring(game:HttpGet('https://raw.githubusercontent.com/404-E6/404_E6Panel/refs/heads/main/WIP-Panel'))()
+
+	end,
+})
+
+local Section = Tab:CreateSection("Beta Fetures (Used for Testing purposes ONLY use at your own risk)")
+
+local Dropdown = Tab:CreateDropdown({
+	Name = "Theme Select",
+	Options = {"Default","Amber Glow"},
+	CurrentOption = {"Default"},
+	MultipleOptions = false,
+	Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Options)
+		-- The function that takes place when the selected option is changed
+		-- The variable (Options) is a table of strings for the current selected options
+		if Options == "Default" then
+			local Theme = "Default"
+		end
+
+		if Options == "Amber Glow" then
+			local Theme = "AmberGlow"
+		end
+	end,
+})
+
+local Tab = Window:CreateTab("Fe Scripts", 4483362458)
+local Section = Tab:CreateSection("Scripts")
+
+local Tab = Window:CreateTab("Client Scripts", 4483362458)
+local Section = Tab:CreateSection("Scripts")
+
+local Toggle = Tab:CreateToggle({
+	Name = "Noclip",
+	CurrentValue = false,
+	Flag = "NoclipToggle",
+	Callback = function(Value)
+		-- Re-check character in case player respawned
+		character = player.Character or player.CharacterAdded:Wait()
+
+		if Value then
+			-- Enable noclip
+			noclipConnection = RunService.Stepped:Connect(function()
+				for _, part in pairs(character:GetDescendants()) do
+					if part:IsA("BasePart") and part.CanCollide then
+						part.CanCollide = false
+					end
+				end
+			end)
+		else
+			-- Disable noclip
+			if noclipConnection then
+				noclipConnection:Disconnect()
+				noclipConnection = nil
+			end
+
+			-- Restore collisions
+			for _, part in pairs(character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = true
+				end
+			end
+		end
+	end,
+})
+
+
+
+local Toggle = Tab:CreateToggle({
+	Name = "Sit",
+	CurrentValue = false,
+	Flag = "SitToggle",
+	Callback = function(Value)
+		character = player.Character or player.CharacterAdded:Wait()
+		humanoid = character:WaitForChild("Humanoid")
+
+		if Value then
+			humanoid.Sit = true
+		else
+			humanoid.Sit = false
+		end
+	end,
+})
+
+local Toggle = Tab:CreateToggle({
+	Name = "Fall",
+	CurrentValue = false,
+	Flag = "FallToggle",
+	Callback = function(Value)
+		character = player.Character or player.CharacterAdded:Wait()
+		humanoid = character:WaitForChild("Humanoid")
+		local hrp = character:WaitForChild("HumanoidRootPart")
+
+		if Value then
+			-- Simulate fall: ragdoll + freeze
+			humanoid.PlatformStand = true
+			hrp.Anchored = true -- "Stuck" to the ground
+		else
+			-- Stand back up
+			humanoid.PlatformStand = false
+			hrp.Anchored = false
+		end
+	end,
+})
+
+local Tab = Window:CreateTab("Panels", 4483362458)
+local Section = Tab:CreateSection("Basic")
+
+local Toggle = Tab:CreateToggle({
+	Name = "Infinite Yield",
+	CurrentValue = false,
+	Flag = "InfiniteYieldToggle", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+	Callback = function(Value)
+		-- The function that takes place when the toggle is pressed
+		-- The variable (Value) is a boolean on whether the toggle is true or false
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+
+	end,
+})
+
+local Toggle = Tab:CreateToggle({
+	Name = "Anna Bypasser",
+	CurrentValue = false,
+	Flag = "AnnaBypasserToggle", 
+	Callback = function(Value)
+		loadstring(game:HttpGet(('https://rawscripts.net/raw/Universal-Script-Annabypasser-33447'),true))()
+
+	end,
+})
+
+local Toggle = Tab:CreateToggle({
+	Name = "Jerk Off",
+	CurrentValue = false,
+	Flag = "JerkOffToggle", 
+	Callback = function(Value)
+		loadstring(game:HttpGet(('https://pastebin.com/raw/H5PfZB5y'),true))()
+
+	end,
+})
+
+local Toggle = Tab:CreateToggle({
+	Name = "God Mode",
+	CurrentValue = false,
+	Flag = "GodModeToggle", 
+	Callback = function(Value)
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/retpirato/Roblox-Scripts/master/Fe%20Shattervast.lua", true))()
+
+	end,
+})
+
+
+local Section = Tab:CreateSection("Natural Disaster Survival")
+
+local Toggle = Tab:CreateToggle({
+	Name = "Parts Ring V4",
+	CurrentValue = false,
+	Flag = "PartsRingV4Toggle", 
+	Callback = function(Value)
+		loadstring(game:HttpGet("https://rscripts.net/raw/super-ring-parts-v4-by-lukas_1741980981842_td0ummjymf.txt",true))()
+
+	end,
+})
+
+local Section = Tab:CreateSection("Brookhaven")
+
+local Toggle = Tab:CreateToggle({
+	Name = "Brookhaven Sound Script",
+	CurrentValue = false,
+	Flag = "BHSoundScript", 
+	Callback = function(Value)
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/ameicaa1/brookhaven-script/main/brookhaven%20script.lua"))()
+
+	end,
+})
+
+local Section = Tab:CreateSection("Prison Life")
+
+local Toggle = Tab:CreateToggle({
+	Name = "Prison Life Admin Commands",
+	CurrentValue = false,
+	Flag = "PLACommands", 
+	Callback = function(Value)
+		loadstring(game:HttpGet("https://scriptblox.com/raw/Prison-Life-Prizz-Admin-14511"))()
+
+	end,
+})
+
+local Section = Tab:CreateSection("Dead Rails")
+
+local Toggle = Tab:CreateToggle({
+	Name = "Dead Rails Exploits",
+	CurrentValue = false,
+	Flag = "DRExploits", 
+	Callback = function(Value)
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/gumanba/Scripts/main/DeadRails"))()
+
+	end,
+})
+
+local Section = Tab:CreateSection("Rivals")
+
+local Toggle = Tab:CreateToggle({
+	Name = "econ",
+	CurrentValue = false,
+	Flag = "RivalEcone", 
+	Callback = function(Value)
+		loadstring(game:HttpGet('https://raw.githubusercontent.com/ConePartyy/Econ/refs/heads/main/Init.txt'))()
+
+	end,
+})
+
+local Section = Tab:CreateSection("Break in Story")
+
+local Toggle = Tab:CreateToggle({
+	Name = "Break in Story 1",
+	CurrentValue = false,
+	Flag = "BIS1", 
+	Callback = function(Value)
+		loadstring(game:HttpGet("https://pastebin.com/raw/JCWALTth"))()
+
+	end,
+})
 
