@@ -13,7 +13,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ragdolled = false
 local teleportToggleOn = false
 local spinning = false
-local spinSpeed = 25
+local spinSpeed = 20
+local speedEnabled = false
+local currentSpeed = 16
+local defaultSpeed = 16
 
 --Connections
 local noclipConnection = nil
@@ -127,9 +130,23 @@ local function stopSpin()
 	end
 end
 
+local function applySpeed()
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humanoid = character:WaitForChild("Humanoid")
+
+	if speedEnabled then
+		humanoid.WalkSpeed = currentSpeed
+	else
+		humanoid.WalkSpeed = defaultSpeed
+	end
+end
 
 -- Connect Functions
 player.CharacterAdded:Connect(onCharacterAdded)
+player.CharacterAdded:Connect(function(character)
+	character:WaitForChild("Humanoid").WalkSpeed = speedEnabled and currentSpeed or defaultSpeed
+end)
+
 
 
 Rayfield:Notify({
@@ -335,17 +352,41 @@ local Toggle = Tab:CreateToggle({
 
 local Slider = Tab:CreateSlider({
 	Name = "Spin Speed",
-	Range = {1, 100},
-	Increment = 1,
+	Range = {10, 1000},
+	Increment = 10,
 	Suffix = "SPIN",
 	CurrentValue = 25,
-	Flag = "Slider1",
+	Flag = "SpinSlider",
 	Callback = function(Value)
 		spinSpeed = Value
 	end,
 })
 
+local Toggle = Tab:CreateToggle({
+	Name = "Speed",
+	CurrentValue = false,
+	Flag = "SpeedToggle", 
+	Callback = function(Value)
+		speedEnabled = Value
+		applySpeed()
+	end,
+})
 
+-- Slider
+local Slider = Tab:CreateSlider({
+	Name = "Speed Amount",
+	Range = {16, 300},
+	Increment = 1,
+	Suffix = "SPEED",
+	CurrentValue = 16,
+	Flag = "SpeedSlider",
+	Callback = function(Value)
+		currentSpeed = Value
+		if speedEnabled then
+			applySpeed()
+		end
+	end,
+})
 
 local Tab = Window:CreateTab("Panels", 4483362458)
 local Section = Tab:CreateSection("Basic")
