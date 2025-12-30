@@ -211,7 +211,7 @@ local Button = Tab:CreateButton({
 
 local Toggle = Tab:CreateToggle({
 	Name = "Testing Panel",
-	CurrentValue = false,
+	CurrentValue = true,
 	Flag = "TestPanelToggle", 
 	Callback = function(Value)
 		loadstring(game:HttpGet('https://raw.githubusercontent.com/404-E6/404_E6Panel/refs/heads/main/WIP-Panel'))()
@@ -511,6 +511,16 @@ local Section = Tab:CreateSection("Break in Story")
 
 local Toggle = Tab:CreateToggle({
 	Name = "Break in Story 1",
+	CurrentValue = false,
+	Flag = "BIS1", 
+	Callback = function(Value)
+		loadstring(game:HttpGet("https://pastebin.com/raw/JCWALTth"))()
+
+	end,
+})
+
+local Toggle = Tab:CreateToggle({
+	Name = "Break in Story 2",
 	CurrentValue = false,
 	Flag = "BIS1", 
 	Callback = function(Value)
