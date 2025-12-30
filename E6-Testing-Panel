@@ -401,7 +401,6 @@ local Section = Tab:CreateSection("Break In Story")
 
 local Section = Tab:CreateSection("Break In 2")
 
-
 local Tab = Window:CreateTab("Panels", 4483362458)
 local Section = Tab:CreateSection("Basic")
 
