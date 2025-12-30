@@ -18,6 +18,14 @@ local speedEnabled = false
 local currentSpeed = 16
 local defaultSpeed = 16
 
+--Lists
+local BreakIn2iItems = {
+   "Bat", "Pitchfork", "Hammer", "Wrench", "Broom", "Armor2",
+   "MedKit", "Key", "GoldKey", "Louise", "Lollipop", "Chips",
+   "GoldenApple", "Pizza", "GoldPizza", "RainbowPizza", "RainbowPizzaBox",
+   "Book", "Cookie", "Apple", "BloxyCola", "Bottle", "Ladder", "Battery"
+}
+
 --Connections
 local noclipConnection = nil
 local fakeSeat = nil
@@ -392,6 +400,15 @@ local Tab = Window:CreateTab("Games", 4483362458)
 local Section = Tab:CreateSection("Break In Story")
 
 local Section = Tab:CreateSection("Break In 2")
+local Dropdown = Main:CreateDropdown({
+   Name = "Selected Item",
+   Options = BreakIn2iItems,
+   CurrentOption = {"Bat"},
+   MultipleOptions = false,
+   Flag = "Dropdown1",
+   Callback = function(Options)
+       
+})
 
 
 local Tab = Window:CreateTab("Panels", 4483362458)
